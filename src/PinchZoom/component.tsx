@@ -100,6 +100,22 @@ const calculateVelocity = (startPoint: Point, endPoint: Point): Point => ({
 
 const comparePoints = (p1: Point, p2: Point) => p1.x === p2.x && p1.y === p2.y;
 
+const findFirstImage = (element: HTMLElement): HTMLImageElement | null => {
+  if (element.tagName === 'IMG') {
+    return element as HTMLImageElement;
+  }
+
+  const children = element.children;
+  for (let i = 0; i < children.length; i++) {
+    const img = findFirstImage(children[i] as HTMLElement);
+    if (img) {
+      return img;
+    }
+  }
+
+  return null;
+};
+
 const noup = () => {};
 
 const zeroPoint = { x: 0, y: 0 };
@@ -169,6 +185,11 @@ class PinchZoom extends Component<Props> {
   private _containerRef: {
     readonly current: HTMLDivElement;
   } = createRef<HTMLDivElement>();
+
+  // test get _zoomFactor public
+  get zoomFactor() {
+    return this._zoomFactor;
+  }
 
   private _handleClick = (clickEvent: Event) => {
     if (this._ignoreNextClick) {
@@ -697,7 +718,10 @@ class PinchZoom extends Component<Props> {
   private _getChildSize(): { width: number; height: number } {
     const { current: div } = this._containerRef;
 
-    return getElementSize(div?.firstElementChild as HTMLElement | null);
+    const firstImage = findFirstImage(div);
+
+    return getElementSize(firstImage as HTMLElement | null);
+    // return getElementSize(div?.firstElementChild as HTMLElement | null);
   }
 
   private _updateInitialZoomFactor() {
@@ -731,9 +755,15 @@ class PinchZoom extends Component<Props> {
       (target || div).addEventListener(eventName, fn, true);
     });
 
-    Array.from(div.querySelectorAll('img')).forEach((img) =>
-      img.addEventListener('load', this._onResize),
-    );
+    const firstImage = findFirstImage(div);
+
+    if (firstImage) {
+      firstImage.addEventListener('load', this._onResize);
+    }
+
+    // Array.from(div.querySelectorAll('img')).forEach((img) =>
+    //   img.addEventListener('load', this._onResize),
+    // );
   }
 
   private _unSubscribe() {
@@ -750,9 +780,15 @@ class PinchZoom extends Component<Props> {
       (target || div).removeEventListener(eventName, fn, true);
     });
 
-    Array.from(div.querySelectorAll('img')).forEach((img) =>
-      img.removeEventListener('load', this._onResize),
-    );
+    const firstImage = findFirstImage(div);
+
+    if (firstImage) {
+      firstImage.removeEventListener('load', this._onResize);
+    }
+
+    // Array.from(div.querySelectorAll('img')).forEach((img) =>
+    //   img.removeEventListener('load', this._onResize),
+    // );
   }
 
   private _update(options?: { isAnimation: boolean }) {
@@ -1046,34 +1082,52 @@ class PinchZoom extends Component<Props> {
   }
 
   render() {
-    const { children, containerProps } = this.props;
-    const child = Children.only(children);
+    const { children, containerProps, containerElementType, renderSources } =
+      this.props;
+    const child = React.Children.only(children);
     const props = containerProps || {};
+    const ElementType = containerElementType || 'div';
 
     return (
       <>
         <style>{styles}</style>
-        <div
-          {...props}
-          ref={this._containerRef}
-          className={classnames(styleRoot, props.className)}
-        >
-          {cloneElement(child, {
-            className: classnames(styleChild, child.props.className),
-          })}
-        </div>
+        {React.createElement(
+          ElementType,
+          {
+            ...props,
+            ref: this._containerRef,
+            className: classnames(styleRoot, props.className),
+          },
+          [
+            ...(renderSources ? renderSources() : []),
+            React.cloneElement(child, {
+              key: 'pinch-zoom-img-child',
+              className: classnames(styleChild, child.props.className),
+            }),
+          ],
+        )}
       </>
     );
   }
 }
 
 if (process.env.NODE_ENV !== 'production') {
-  const { any, element, object, number, func, bool } = require('prop-types');
+  const {
+    any,
+    element,
+    object,
+    number,
+    func,
+    bool,
+    string,
+  } = require('prop-types');
 
   // @ts-ignore
   PinchZoom.propTypes = {
     children: element,
     containerProps: object,
+    containerElementType: string,
+    renderSources: func,
     wheelScaleFactor: number,
     animationDuration: number,
     draggableUnZoomed: bool,
