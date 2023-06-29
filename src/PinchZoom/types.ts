@@ -51,7 +51,6 @@ export interface DefaultProps {
   onZoomEnd: () => void;
   onZoomStart: () => void;
   onZoomUpdate: () => void;
-  setInitialZoomFactor: (zoomFactor: number) => void;
   setOffsetsOnce: boolean;
   tapZoomFactor: number;
   verticalPadding: number;
