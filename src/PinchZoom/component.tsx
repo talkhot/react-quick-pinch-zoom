@@ -460,10 +460,6 @@ class PinchZoom extends Component<Props> {
     });
   }
 
-  setInitialZoomFactor(zoomFactor: number) {
-    return this._initialZoomFactor = zoomFactor
-  }
-
   scaleTo(options: ScaleToOptions) {
     const { x, y, scale, animated, duration } = {
       duration: 250,

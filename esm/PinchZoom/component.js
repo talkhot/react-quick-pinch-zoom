@@ -510,9 +510,6 @@ var PinchZoom = /** @class */ (function (_super) {
       duration: duration,
     });
   };
-  PinchZoom.prototype.setInitialZoomFactor = function (zoomFactor) {
-    return (this._initialZoomFactor = zoomFactor);
-  };
   PinchZoom.prototype.scaleTo = function (options) {
     var _this = this;
     var _a = __assign({ duration: 250, animated: true }, options),
