@@ -46,7 +46,6 @@ declare class PinchZoom extends React.Component<Props> {
   private _setupOffsets;
   private _sanitizeOffset;
   alignCenter(options: ScaleToOptions): void;
-  setInitialZoomFactor(zoomFactor: number): number;
   scaleTo(options: ScaleToOptions): void;
   private _scaleTo;
   private _scale;
