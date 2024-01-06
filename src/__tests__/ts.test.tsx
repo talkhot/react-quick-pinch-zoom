@@ -1,4 +1,4 @@
-import React, { createRef } from 'react';
+import  { createRef } from 'preact/compat';
 import PinchZoom from '../PinchZoom/component';
 
 export const test1 = (

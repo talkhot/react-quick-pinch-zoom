@@ -1,10 +1,10 @@
-import React, {
+import {
   Component,
   createRef,
   Children,
   cloneElement,
   createElement,
-} from 'react';
+} from 'preact/compat';
 
 import { styleRoot, styleChild, styles } from './styles.css';
 import { Interaction, Point } from '../types';
@@ -1090,18 +1090,23 @@ class PinchZoom extends Component<Props> {
       <>
         <style>{styles}</style>
         {createElement(
+          // @ts-ignore
           ElementType,
           {
             ...props,
             ref: this._containerRef,
+            // @ts-ignore
             className: classnames(styleRoot, props.className),
           },
           [
             ...(renderSources ? renderSources() : []),
-            cloneElement(child, {
-              key: 'pinch-zoom-img-child',
-              className: classnames(styleChild, child.props.className),
-            }),
+            child // @ts-ignore
+              ? cloneElement(child, {
+                  key: 'pinch-zoom-img-child',
+                  // @ts-ignore
+                  className: classnames(styleChild, child.props.className),
+                })
+              : undefined,
           ],
         )}
       </>

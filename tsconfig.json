@@ -2,7 +2,12 @@
   "compilerOptions": {
     "target": "ES5",
     "lib": ["DOM", "ESNext"],
-    "jsx": "react",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "paths": {
+      "react": ["./node_modules/preact/compat/"],
+      "react-dom": ["./node_modules/preact/compat/"],
+    },
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,

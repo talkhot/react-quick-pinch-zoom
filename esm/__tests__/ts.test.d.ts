@@ -1,2 +1,1 @@
-import React from 'react';
-export declare const test1: React.JSX.Element;
+export declare const test1: import("preact/compat").JSX.Element;

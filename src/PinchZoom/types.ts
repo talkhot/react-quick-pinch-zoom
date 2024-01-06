@@ -1,4 +1,4 @@
-import type { ReactElement, HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'preact/compat';
 
 export interface UpdateAction {
   x: number;
@@ -66,7 +66,7 @@ export interface DefaultProps {
 
 export interface RequiredProps {
   onUpdate: (updateAction: UpdateAction) => void;
-  children: ReactElement;
+  children: ReactNode;
 }
 
 export interface Props extends DefaultProps, RequiredProps {

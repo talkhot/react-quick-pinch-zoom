@@ -1,63 +1,64 @@
-import { ReactElement, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'preact/compat';
 export interface UpdateAction {
-  x: number;
-  y: number;
-  scale: number;
+    x: number;
+    y: number;
+    scale: number;
 }
 export interface AnimateOptions {
-  timeFn?: (x: number) => number;
-  callback?: () => void;
-  duration?: number;
+    timeFn?: (x: number) => number;
+    callback?: () => void;
+    duration?: number;
 }
 export interface ScaleToOptions {
-  x: number;
-  y: number;
-  scale: number;
-  animated?: boolean;
-  duration?: number;
+    x: number;
+    y: number;
+    scale: number;
+    animated?: boolean;
+    duration?: number;
 }
 export interface OffsetBoundsOptions {
-  childDimension: number;
-  containerDimension: number;
-  padding: number;
-  centerContained?: boolean;
+    childDimension: number;
+    containerDimension: number;
+    padding: number;
+    centerContained?: boolean;
 }
 export interface DefaultProps {
-  shouldInterceptWheel: (e: WheelEvent) => boolean;
-  shouldCancelHandledTouchEndEvents: boolean;
-  containerProps: React.HTMLAttributes<HTMLDivElement>;
-  animationDuration: number;
-  wheelScaleFactor: number;
-  draggableUnZoomed: boolean;
-  enforceBoundsDuringZoom: boolean;
-  centerContained: boolean;
-  inertia: boolean;
-  inertiaFriction: number;
-  enabled: boolean;
-  horizontalPadding: number;
-  lockDragAxis: boolean;
-  maxZoom: number;
-  minZoom: number;
-  onDoubleTap: () => void;
-  onDragEnd: () => void;
-  onDragStart: () => void;
-  onDragUpdate: () => void;
-  onZoomEnd: () => void;
-  onZoomStart: () => void;
-  onZoomUpdate: () => void;
-  setOffsetsOnce: boolean;
-  tapZoomFactor: number;
-  verticalPadding: number;
-  zoomOutFactor: number;
-  doubleTapZoomOutOnMaxScale: boolean;
-  doubleTapToggleZoom: boolean;
-  isTouch: () => boolean;
-  _document: Document;
-  containerElementType: string;
-  renderSources?: () => ReactNode[];
+    shouldInterceptWheel: (e: WheelEvent) => boolean;
+    shouldCancelHandledTouchEndEvents: boolean;
+    containerProps: HTMLAttributes<HTMLDivElement>;
+    animationDuration: number;
+    wheelScaleFactor: number;
+    draggableUnZoomed: boolean;
+    enforceBoundsDuringZoom: boolean;
+    centerContained: boolean;
+    inertia: boolean;
+    inertiaFriction: number;
+    enabled: boolean;
+    horizontalPadding: number;
+    lockDragAxis: boolean;
+    maxZoom: number;
+    minZoom: number;
+    onDoubleTap: () => void;
+    onDragEnd: () => void;
+    onDragStart: () => void;
+    onDragUpdate: () => void;
+    onZoomEnd: () => void;
+    onZoomStart: () => void;
+    onZoomUpdate: () => void;
+    setOffsetsOnce: boolean;
+    tapZoomFactor: number;
+    verticalPadding: number;
+    zoomOutFactor: number;
+    doubleTapZoomOutOnMaxScale: boolean;
+    doubleTapToggleZoom: boolean;
+    isTouch: () => boolean;
+    _document: Document;
+    containerElementType: string;
+    renderSources?: () => ReactNode[];
 }
 export interface RequiredProps {
-  onUpdate: (updateAction: UpdateAction) => void;
-  children: ReactElement;
+    onUpdate: (updateAction: UpdateAction) => void;
+    children: ReactNode;
 }
-export interface Props extends DefaultProps, RequiredProps {}
+export interface Props extends DefaultProps, RequiredProps {
+}
