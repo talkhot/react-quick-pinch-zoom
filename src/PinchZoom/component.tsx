@@ -1,4 +1,10 @@
-import React, { Component, createRef, Children, cloneElement } from 'react';
+import React, {
+  Component,
+  createRef,
+  Children,
+  cloneElement,
+  createElement,
+} from 'react';
 
 import { styleRoot, styleChild, styles } from './styles.css';
 import { Interaction, Point } from '../types';
@@ -1076,14 +1082,14 @@ class PinchZoom extends Component<Props> {
   render() {
     const { children, containerProps, containerElementType, renderSources } =
       this.props;
-    const child = React.Children.only(children);
+    const child = Children.only(children);
     const props = containerProps || {};
     const ElementType = containerElementType || 'div';
 
     return (
       <>
         <style>{styles}</style>
-        {React.createElement(
+        {createElement(
           ElementType,
           {
             ...props,
@@ -1092,7 +1098,7 @@ class PinchZoom extends Component<Props> {
           },
           [
             ...(renderSources ? renderSources() : []),
-            React.cloneElement(child, {
+            cloneElement(child, {
               key: 'pinch-zoom-img-child',
               className: classnames(styleChild, child.props.className),
             }),
