@@ -760,10 +760,6 @@ class PinchZoom extends Component<Props> {
     if (firstImage) {
       firstImage.addEventListener('load', this._onResize);
     }
-
-    // Array.from(div.querySelectorAll('img')).forEach((img) =>
-    //   img.addEventListener('load', this._onResize),
-    // );
   }
 
   private _unSubscribe() {
@@ -785,10 +781,6 @@ class PinchZoom extends Component<Props> {
     if (firstImage) {
       firstImage.removeEventListener('load', this._onResize);
     }
-
-    // Array.from(div.querySelectorAll('img')).forEach((img) =>
-    //   img.removeEventListener('load', this._onResize),
-    // );
   }
 
   private _update(options?: { isAnimation: boolean }) {
