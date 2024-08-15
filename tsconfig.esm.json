@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "ES2022",
+    "target": "ES2022",
+    "declaration": true,
+    "outDir": "./esm",
+    "moduleResolution": "node",
+    "jsx": "react-jsx", // Added this line to support JSX
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}

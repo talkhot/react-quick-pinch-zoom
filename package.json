@@ -4,6 +4,12 @@
   "main": "cmj/index.js",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./esm/index.js",
+      "require": "./cmj/index.js"
+    }
+  },
   "dependencies": {
     "tslib": ">=2.0.0"
   },
@@ -31,7 +37,7 @@
     "presize": "yarn build",
     "size": "size-limit",
     "prebuild": "rm -rf esm cmj",
-    "build": "tsc --module ES2022 --declaration true --outDir esm && tsc --module CommonJS --outDir cmj",
+    "build": "tsc --project tsconfig.esm.json && tsc --project tsconfig.cjs.json",
     "postbuild": "prettier --write cmj/**/*.js esm/**/*.js esm/**/*.d.ts",
     "prepublishOnly": "yarn run build"
   },

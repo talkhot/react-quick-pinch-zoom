@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode } from 'react';
+import type { ReactElement, HTMLAttributes, ReactNode } from 'react';
 export interface UpdateAction {
   x: number;
   y: number;
@@ -25,7 +25,7 @@ export interface OffsetBoundsOptions {
 export interface DefaultProps {
   shouldInterceptWheel: (e: WheelEvent) => boolean;
   shouldCancelHandledTouchEndEvents: boolean;
-  containerProps: React.HTMLAttributes<HTMLDivElement>;
+  containerProps: HTMLAttributes<HTMLDivElement>;
   animationDuration: number;
   wheelScaleFactor: number;
   draggableUnZoomed: boolean;

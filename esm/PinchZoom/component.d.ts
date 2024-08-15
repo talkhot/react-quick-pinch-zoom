@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { ScaleToOptions, Props, DefaultProps } from './types';
-declare class PinchZoom extends React.Component<Props> {
-  static defaultProps: DefaultProps;
+import { Component } from 'react';
+import { ScaleToOptions, Props } from './types';
+declare class PinchZoom extends Component<Props> {
+  static defaultProps: any;
   private _velocity;
   private _prevDragMovePoint;
   private _containerObserver;
@@ -86,6 +86,6 @@ declare class PinchZoom extends React.Component<Props> {
   private _handlers;
   componentDidMount(): void;
   componentWillUnmount(): void;
-  render(): React.JSX.Element;
+  render(): import('react/jsx-runtime').JSX.Element;
 }
 export default PinchZoom;

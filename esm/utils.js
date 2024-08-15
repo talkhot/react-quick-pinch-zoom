@@ -1,16 +1,8 @@
-var isSsr = typeof window === 'undefined';
-export var isTouch = function () {
-    return !isSsr && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-};
-export var make2dTransformValue = function (_a) {
-    var x = _a.x, y = _a.y, scale = _a.scale;
-    return "scale(".concat(scale, ") translate(").concat(x, "px, ").concat(y, "px)");
-};
-export var make3dTransformValue = function (_a) {
-    var x = _a.x, y = _a.y, scale = _a.scale;
-    return "scale3d(".concat(scale, ",").concat(scale, ", 1) translate3d(").concat(x, "px, ").concat(y, "px, 0)");
-};
-export var hasTranslate3DSupport = function () {
-    var css = !isSsr && window.CSS;
+const isSsr = typeof window === 'undefined';
+export const isTouch = () => !isSsr && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+export const make2dTransformValue = ({ x, y, scale }) => `scale(${scale}) translate(${x}px, ${y}px)`;
+export const make3dTransformValue = ({ x, y, scale }) => `scale3d(${scale},${scale}, 1) translate3d(${x}px, ${y}px, 0)`;
+export const hasTranslate3DSupport = () => {
+    const css = !isSsr && window.CSS;
     return css && css.supports && css.supports('transform', 'translate3d(0,0,0)');
 };

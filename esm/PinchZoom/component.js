@@ -1,303 +1,165 @@
-import { __assign, __extends, __spreadArray } from 'tslib';
-import * as React from 'react';
+import {
+  jsx as _jsx,
+  Fragment as _Fragment,
+  jsxs as _jsxs,
+} from 'react/jsx-runtime';
+import {
+  Component,
+  createRef,
+  Children,
+  cloneElement,
+  createElement,
+} from 'react';
 import { styleRoot, styleChild, styles } from './styles.css';
 import { isTouch } from '../utils';
 import { getOffsetBounds } from './getOffsetBounds';
-var classnames = function (base, other) {
-  return other ? ''.concat(base, ' ').concat(other) : base;
-};
-var abs = Math.abs,
-  min = Math.min,
-  sqrt = Math.sqrt;
-var isSsr = typeof window === 'undefined';
-var isMac = isSsr ? false : /(Mac)/i.test(navigator.platform);
-var isDragInteraction = function (i) {
-  return i === 'drag';
-};
-var isZoomInteraction = function (i) {
-  return i === 'zoom';
-};
-var isZoomGesture = function (wheelEvent) {
-  return isMac && wheelEvent.ctrlKey;
-};
-var cancelEvent = function (event) {
+const classnames = (base, other) => (other ? `${base} ${other}` : base);
+const { abs, min, sqrt } = Math;
+const isSsr = typeof window === 'undefined';
+const isMac = isSsr ? false : /(Mac)/i.test(navigator.platform);
+const isDragInteraction = (i) => i === 'drag';
+const isZoomInteraction = (i) => i === 'zoom';
+const isZoomGesture = (wheelEvent) => isMac && wheelEvent.ctrlKey;
+const cancelEvent = (event) => {
   event.stopPropagation();
   event.preventDefault();
 };
-var getDistance = function (a, b) {
-  var x = a.x - b.x;
-  var y = a.y - b.y;
+const getDistance = (a, b) => {
+  const x = a.x - b.x;
+  const y = a.y - b.y;
   return sqrt(x * x + y * y);
 };
-var calculateScale = function (startTouches, endTouches) {
-  var startDistance = getDistance(startTouches[0], startTouches[1]);
-  var endDistance = getDistance(endTouches[0], endTouches[1]);
+const calculateScale = (startTouches, endTouches) => {
+  const startDistance = getDistance(startTouches[0], startTouches[1]);
+  const endDistance = getDistance(endTouches[0], endTouches[1]);
   return endDistance / startDistance;
 };
-var isCloseTo = function (value, expected) {
-  return value > expected - 0.01 && value < expected + 0.01;
-};
-var swing = function (p) {
-  return -Math.cos(p * Math.PI) / 2 + 0.5;
-};
-var getPointByPageCoordinates = function (touch) {
-  return {
-    x: touch.pageX,
-    y: touch.pageY,
-  };
-};
-var getPageCoordinatesByTouches = function (touches) {
-  return Array.from(touches).map(getPointByPageCoordinates);
-};
-var sum = function (a, b) {
-  return a + b;
-};
-var getVectorAvg = function (vectors) {
-  return {
-    x:
-      vectors
-        .map(function (_a) {
-          var x = _a.x;
-          return x;
-        })
-        .reduce(sum, 0) / vectors.length,
-    y:
-      vectors
-        .map(function (_a) {
-          var y = _a.y;
-          return y;
-        })
-        .reduce(sum, 0) / vectors.length,
-  };
-};
-var clamp = function (min, max, value) {
-  return value < min ? min : value > max ? max : value;
-};
-var shouldInterceptWheel = function (event) {
-  return !(event.ctrlKey || event.metaKey);
-};
-var getElementSize = function (element) {
+const isCloseTo = (value, expected) =>
+  value > expected - 0.01 && value < expected + 0.01;
+const swing = (p) => -Math.cos(p * Math.PI) / 2 + 0.5;
+const getPointByPageCoordinates = (touch) => ({
+  x: touch.pageX,
+  y: touch.pageY,
+});
+const getPageCoordinatesByTouches = (touches) =>
+  Array.from(touches).map(getPointByPageCoordinates);
+const sum = (a, b) => a + b;
+const getVectorAvg = (vectors) => ({
+  x: vectors.map(({ x }) => x).reduce(sum, 0) / vectors.length,
+  y: vectors.map(({ y }) => y).reduce(sum, 0) / vectors.length,
+});
+const clamp = (min, max, value) =>
+  value < min ? min : value > max ? max : value;
+const shouldInterceptWheel = (event) => !(event.ctrlKey || event.metaKey);
+const getElementSize = (element) => {
   if (element) {
-    var offsetWidth = element.offsetWidth,
-      offsetHeight = element.offsetHeight;
+    const { offsetWidth, offsetHeight } = element;
     // Any DOMElement
     if (offsetWidth && offsetHeight) {
       return { width: offsetWidth, height: offsetHeight };
     }
     // Svg support
-    var style = getComputedStyle(element);
-    var width = parseFloat(style.width);
-    var height = parseFloat(style.height);
+    const style = getComputedStyle(element);
+    const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
     if (height && width) {
-      return { width: width, height: height };
+      return { width, height };
     }
   }
   return { width: 0, height: 0 };
 };
-var calculateVelocity = function (startPoint, endPoint) {
-  return {
-    x: endPoint.x - startPoint.x,
-    y: endPoint.y - startPoint.y,
-  };
-};
-var comparePoints = function (p1, p2) {
-  return p1.x === p2.x && p1.y === p2.y;
-};
-var findFirstImage = function (element) {
+const calculateVelocity = (startPoint, endPoint) => ({
+  x: endPoint.x - startPoint.x,
+  y: endPoint.y - startPoint.y,
+});
+const comparePoints = (p1, p2) => p1.x === p2.x && p1.y === p2.y;
+const findFirstImage = (element) => {
   if (element.tagName === 'IMG') {
     return element;
   }
-  var children = element.children;
-  for (var i = 0; i < children.length; i++) {
-    var img = findFirstImage(children[i]);
+  const children = element.children;
+  for (let i = 0; i < children.length; i++) {
+    const img = findFirstImage(children[i]);
     if (img) {
       return img;
     }
   }
   return null;
 };
-var noup = function () {};
-var zeroPoint = { x: 0, y: 0 };
-var PinchZoom = /** @class */ (function (_super) {
-  __extends(PinchZoom, _super);
-  function PinchZoom() {
-    var _this = (_super !== null && _super.apply(this, arguments)) || this;
-    _this._prevDragMovePoint = null;
-    _this._containerObserver = null;
-    _this._fingers = 0;
-    _this._firstMove = true;
-    _this._initialOffset = __assign({}, zeroPoint);
-    _this._interaction = null;
-    _this._isDoubleTap = false;
-    _this._isOffsetsSet = false;
-    _this._lastDragPosition = null;
-    _this._lastScale = 1;
-    _this._lastTouchStart = 0;
-    _this._lastZoomCenter = null;
-    _this._listenMouseMove = false;
-    _this._nthZoom = 0;
-    _this._offset = __assign({}, zeroPoint);
-    _this._startOffset = __assign({}, zeroPoint);
-    _this._startTouches = null;
-    _this._updatePlaned = false;
-    _this._wheelTimeOut = null;
-    _this._zoomFactor = 1;
-    _this._initialZoomFactor = 1;
-    _this._draggingPoint = __assign({}, zeroPoint);
-    // It help reduce behavior difference between touch and mouse events
-    _this._ignoreNextClick = false;
-    // @ts-ignore
-    _this._containerRef = React.createRef();
-    _this._handleClick = function (clickEvent) {
-      if (_this._ignoreNextClick) {
-        _this._ignoreNextClick = false;
-        clickEvent.stopPropagation();
-      }
-    };
-    _this._onResize = function () {
-      var _a;
-      if (
-        (_a = _this._containerRef) === null || _a === void 0
-          ? void 0
-          : _a.current
-      ) {
-        _this._updateInitialZoomFactor();
-        _this._setupOffsets();
-        _this._update();
-      }
-    };
-    _this._handlerOnTouchEnd = _this._handlerIfEnable(function (touchEndEvent) {
-      _this._fingers = touchEndEvent.touches.length;
-      if (
-        _this.props.shouldCancelHandledTouchEndEvents &&
-        (isZoomInteraction(_this._interaction) ||
-          (isDragInteraction(_this._interaction) &&
-            (_this._startOffset.x !== _this._offset.x ||
-              _this._startOffset.y !== _this._offset.y)))
-      ) {
-        cancelEvent(touchEndEvent);
-      }
-      if (isDragInteraction(_this._interaction) && !_this._enoughToDrag()) {
-        _this._handleClick(touchEndEvent);
-      }
-      _this._updateInteraction(touchEndEvent);
-    });
-    _this._handlerOnTouchStart = _this._handlerIfEnable(function (
-      touchStartEvent,
-    ) {
-      _this._firstMove = true;
-      _this._fingers = touchStartEvent.touches.length;
-      _this._detectDoubleTap(touchStartEvent);
-    });
-    _this._handlerOnTouchMove = _this._handlerIfEnable(function (
-      touchMoveEvent,
-    ) {
-      if (_this._isDoubleTap) {
-        return;
-      }
-      _this._collectInertia(touchMoveEvent);
-      if (_this._firstMove) {
-        _this._updateInteraction(touchMoveEvent);
-        if (_this._interaction) {
-          cancelEvent(touchMoveEvent);
-        }
-        _this._startOffset = __assign({}, _this._offset);
-        _this._startTouches = getPageCoordinatesByTouches(
-          touchMoveEvent.touches,
-        );
-      } else {
-        if (isZoomInteraction(_this._interaction)) {
-          if (
-            _this._startTouches &&
-            _this._startTouches.length === 2 &&
-            touchMoveEvent.touches.length === 2
-          ) {
-            _this._handleZoom(
-              touchMoveEvent,
-              calculateScale(
-                _this._startTouches,
-                getPageCoordinatesByTouches(touchMoveEvent.touches),
-              ),
-            );
-          }
-        } else if (isDragInteraction(_this._interaction)) {
-          _this._handleDrag(touchMoveEvent);
-        }
-        if (_this._interaction) {
-          cancelEvent(touchMoveEvent);
-          _this._update();
-        }
-      }
-      _this._firstMove = false;
-    });
-    _this._handlerWheel = function (wheelEvent) {
-      if (_this.props.shouldInterceptWheel(wheelEvent)) {
-        return;
-      }
-      cancelEvent(wheelEvent);
-      var pageX = wheelEvent.pageX,
-        pageY = wheelEvent.pageY,
-        deltaY = wheelEvent.deltaY,
-        deltaMode = wheelEvent.deltaMode;
-      var scaleDelta = 1;
-      if (isZoomGesture(wheelEvent) || deltaMode === 1) {
-        scaleDelta = 15;
-      }
-      var likeTouchEvent = {
-        touches: [
-          // @ts-ignore
-          { pageX: pageX, pageY: pageY },
-        ],
-      };
-      var center = _this._getOffsetByFirstTouch(likeTouchEvent);
-      var dScale = deltaY * scaleDelta;
-      _this._stopAnimation();
-      _this._scaleTo(
-        _this._zoomFactor - dScale / _this.props.wheelScaleFactor,
-        center,
-      );
-      _this._update();
-      clearTimeout(
-        // @ts-ignore
-        _this._wheelTimeOut,
-      );
-      _this._wheelTimeOut = setTimeout(function () {
-        return _this._sanitize();
-      }, 100);
-    };
-    // @ts-ignore
-    _this._handlers = _this.props.isTouch()
-      ? [
-          ['touchstart', _this._handlerOnTouchStart],
-          ['touchend', _this._handlerOnTouchEnd],
-          ['touchmove', _this._handlerOnTouchMove],
-        ]
-      : [
-          [
-            'mousemove',
-            _this.simulate(_this._handlerOnTouchMove),
-            _this.props._document,
-          ],
-          [
-            'mouseup',
-            _this.simulate(_this._handlerOnTouchEnd),
-            _this.props._document,
-          ],
-          ['mousedown', _this.simulate(_this._handlerOnTouchStart)],
-          ['click', _this._handleClick],
-          ['wheel', _this._handlerWheel],
-        ];
-    return _this;
+const noup = () => {};
+const zeroPoint = { x: 0, y: 0 };
+class PinchZoom extends Component {
+  static defaultProps = {
+    animationDuration: 250,
+    draggableUnZoomed: true,
+    enforceBoundsDuringZoom: false,
+    centerContained: false,
+    enabled: true,
+    inertia: true,
+    inertiaFriction: 0.96,
+    horizontalPadding: 0,
+    isTouch,
+    lockDragAxis: false,
+    maxZoom: 5,
+    minZoom: 0.5,
+    onDoubleTap: noup,
+    onDragEnd: noup,
+    onDragStart: noup,
+    onDragUpdate: noup,
+    onZoomEnd: noup,
+    onZoomStart: noup,
+    onZoomUpdate: noup,
+    setOffsetsOnce: false,
+    shouldInterceptWheel,
+    shouldCancelHandledTouchEndEvents: false,
+    tapZoomFactor: 1,
+    verticalPadding: 0,
+    wheelScaleFactor: 1500,
+    zoomOutFactor: 1.3,
+    doubleTapZoomOutOnMaxScale: false,
+    doubleTapToggleZoom: false,
+    _document: isSsr ? null : window.document,
+  };
+  _velocity;
+  _prevDragMovePoint = null;
+  _containerObserver = null;
+  _fingers = 0;
+  _firstMove = true;
+  _hasInteraction;
+  _inAnimation;
+  _initialOffset = { ...zeroPoint };
+  _interaction = null;
+  _isDoubleTap = false;
+  _isOffsetsSet = false;
+  _lastDragPosition = null;
+  _lastScale = 1;
+  _lastTouchStart = 0;
+  _lastZoomCenter = null;
+  _listenMouseMove = false;
+  _nthZoom = 0;
+  _offset = { ...zeroPoint };
+  _startOffset = { ...zeroPoint };
+  _startTouches = null;
+  _updatePlaned = false;
+  _wheelTimeOut = null;
+  _zoomFactor = 1;
+  _initialZoomFactor = 1;
+  _draggingPoint = { ...zeroPoint };
+  // It help reduce behavior difference between touch and mouse events
+  _ignoreNextClick = false;
+  // @ts-ignore
+  _containerRef = createRef();
+  // test get _zoomFactor public
+  get zoomFactor() {
+    return this._zoomFactor;
   }
-  Object.defineProperty(PinchZoom.prototype, 'zoomFactor', {
-    // test get _zoomFactor public
-    get: function () {
-      return this._zoomFactor;
-    },
-    enumerable: false,
-    configurable: true,
-  });
-  PinchZoom.prototype._handleDragStart = function (event) {
+  _handleClick = (clickEvent) => {
+    if (this._ignoreNextClick) {
+      this._ignoreNextClick = false;
+      clickEvent.stopPropagation();
+    }
+  };
+  _handleDragStart(event) {
     this._ignoreNextClick = true;
     this.props.onDragStart();
     this._stopAnimation();
@@ -306,9 +168,9 @@ var PinchZoom = /** @class */ (function (_super) {
     this._hasInteraction = true;
     this._draggingPoint = this._offset;
     this._handleDrag(event);
-  };
-  PinchZoom.prototype._handleDrag = function (event) {
-    var touch = this._getOffsetByFirstTouch(event);
+  }
+  _handleDrag(event) {
+    const touch = this._getOffsetByFirstTouch(event);
     if (this._enoughToDrag()) {
       this._drag(touch, this._lastDragPosition);
     } else {
@@ -316,70 +178,64 @@ var PinchZoom = /** @class */ (function (_super) {
     }
     this._offset = this._sanitizeOffset(this._offset);
     this._lastDragPosition = touch;
-  };
-  PinchZoom.prototype._resetInertia = function () {
+  }
+  _resetInertia() {
     this._velocity = null;
     this._prevDragMovePoint = null;
-  };
-  PinchZoom.prototype._realizeInertia = function () {
-    var _this = this;
-    var _a = this.props,
-      inertiaFriction = _a.inertiaFriction,
-      inertia = _a.inertia;
+  }
+  _realizeInertia() {
+    const { inertiaFriction, inertia } = this.props;
     if (!inertia || !this._velocity) {
       return;
     }
-    var _b = this._velocity,
-      x = _b.x,
-      y = _b.y;
+    let { x, y } = this._velocity;
     if (x || y) {
       this._stopAnimation();
       this._resetInertia();
-      var renderFrame = function () {
+      const renderFrame = () => {
         x *= inertiaFriction;
         y *= inertiaFriction;
         if (!x && !y) {
-          return _this._stopAnimation();
+          return this._stopAnimation();
         }
-        var prevOffset = __assign({}, _this._offset);
-        _this._addOffset({ x: x, y: y });
-        _this._offset = _this._sanitizeOffset(_this._offset);
-        if (comparePoints(prevOffset, _this._offset)) {
-          return _this._stopAnimation();
+        const prevOffset = { ...this._offset };
+        this._addOffset({ x, y });
+        this._offset = this._sanitizeOffset(this._offset);
+        if (comparePoints(prevOffset, this._offset)) {
+          return this._stopAnimation();
         }
-        _this._update({ isAnimation: true });
+        this._update({ isAnimation: true });
       };
       this._animate(renderFrame, { duration: 9999 });
     }
-  };
-  PinchZoom.prototype._collectInertia = function (_a) {
-    var touches = _a.touches;
+  }
+  _collectInertia({ touches }) {
     if (!this.props.inertia) {
       return;
     }
-    var currentCoordinates = getPageCoordinatesByTouches(touches)[0];
-    var prevPoint = this._prevDragMovePoint;
+    const currentCoordinates = getPageCoordinatesByTouches(touches)[0];
+    const prevPoint = this._prevDragMovePoint;
     if (prevPoint) {
       this._velocity = calculateVelocity(currentCoordinates, prevPoint);
     }
     this._prevDragMovePoint = currentCoordinates;
-  };
-  PinchZoom.prototype._handleDragEnd = function () {
+  }
+  _handleDragEnd() {
     this.props.onDragEnd();
     this._end();
     this._realizeInertia();
-  };
-  PinchZoom.prototype._handleZoomStart = function () {
+  }
+  _handleZoomStart() {
     this.props.onZoomStart();
     this._stopAnimation();
     this._lastScale = 1;
     this._nthZoom = 0;
     this._lastZoomCenter = null;
     this._hasInteraction = true;
-  };
-  PinchZoom.prototype._handleZoom = function (event, newScale) {
-    var touchCenter = getVectorAvg(this._getOffsetTouches(event));
-    var scale = newScale / this._lastScale;
+  }
+  _handleZoom(event, newScale) {
+    const touchCenter = getVectorAvg(this._getOffsetTouches(event));
+    const scale = newScale / this._lastScale;
     this._lastScale = newScale;
     // The first touch events are thrown away since they are not precise
     this._nthZoom += 1;
@@ -391,97 +247,95 @@ var PinchZoom = /** @class */ (function (_super) {
       }
     }
     this._lastZoomCenter = touchCenter;
-  };
-  PinchZoom.prototype._handleZoomEnd = function () {
+  }
+  _handleZoomEnd() {
     this.props.onZoomEnd();
     this._end();
-  };
-  PinchZoom.prototype._handleDoubleTap = function (event) {
-    var _this = this;
+  }
+  _handleDoubleTap(event) {
     if (this._hasInteraction || this.props.tapZoomFactor === 0) {
       return;
     }
-    var needZoomOut =
+    const needZoomOut =
       (this.props.doubleTapZoomOutOnMaxScale &&
         this._zoomFactor === this.props.maxZoom) ||
       (this.props.doubleTapToggleZoom && this._zoomFactor > 1);
     this.props.onDoubleTap();
     this._ignoreNextClick = true;
-    var zoomFactor = this._zoomFactor + this.props.tapZoomFactor;
-    var startZoomFactor = this._zoomFactor;
-    var updateProgress = function (progress) {
-      _this._scaleTo(
+    const zoomFactor = this._zoomFactor + this.props.tapZoomFactor;
+    const startZoomFactor = this._zoomFactor;
+    const updateProgress = (progress) => {
+      this._scaleTo(
         startZoomFactor + progress * (zoomFactor - startZoomFactor),
         center,
       );
     };
-    var center = this._getOffsetByFirstTouch(event);
+    let center = this._getOffsetByFirstTouch(event);
     this._isDoubleTap = true;
     if (startZoomFactor > zoomFactor) {
       center = this._getCurrentZoomCenter();
     }
     needZoomOut ? this._zoomOutAnimation() : this._animate(updateProgress);
-  };
-  PinchZoom.prototype._computeInitialOffset = function () {
-    var rect = this._getContainerRect();
-    var _a = this._getChildSize(),
-      width = _a.width,
-      height = _a.height;
-    var x = -abs(width * this._getInitialZoomFactor() - rect.width) / 2;
-    var y = -abs(height * this._getInitialZoomFactor() - rect.height) / 2;
-    this._initialOffset = { x: x, y: y };
-  };
-  PinchZoom.prototype._resetOffset = function () {
-    this._offset = __assign({}, this._initialOffset);
-  };
-  PinchZoom.prototype._setupOffsets = function () {
+  }
+  _computeInitialOffset() {
+    const rect = this._getContainerRect();
+    const { width, height } = this._getChildSize();
+    const x = -abs(width * this._getInitialZoomFactor() - rect.width) / 2;
+    const y = -abs(height * this._getInitialZoomFactor() - rect.height) / 2;
+    this._initialOffset = { x, y };
+  }
+  _resetOffset() {
+    this._offset = { ...this._initialOffset };
+  }
+  _setupOffsets() {
     if (this.props.setOffsetsOnce && this._isOffsetsSet) {
       return;
     }
     this._isOffsetsSet = true;
     this._computeInitialOffset();
     this._resetOffset();
-  };
-  PinchZoom.prototype._sanitizeOffset = function (offset) {
-    var rect = this._getContainerRect();
-    var _a = this._getChildSize(),
-      width = _a.width,
-      height = _a.height;
-    var elWidth = width * this._getInitialZoomFactor() * this._zoomFactor;
-    var elHeight = height * this._getInitialZoomFactor() * this._zoomFactor;
-    var _b = getOffsetBounds({
-        containerDimension: rect.width,
-        childDimension: elWidth,
-        padding: this.props.horizontalPadding,
-        centerContained: this.props.centerContained,
-      }),
-      minOffsetX = _b[0],
-      maxOffsetX = _b[1];
-    var _c = getOffsetBounds({
-        containerDimension: rect.height,
-        childDimension: elHeight,
-        padding: this.props.verticalPadding,
-        centerContained: this.props.centerContained,
-      }),
-      minOffsetY = _c[0],
-      maxOffsetY = _c[1];
+  }
+  _sanitizeOffset(offset) {
+    const rect = this._getContainerRect();
+    const { width, height } = this._getChildSize();
+    const elWidth = width * this._getInitialZoomFactor() * this._zoomFactor;
+    const elHeight = height * this._getInitialZoomFactor() * this._zoomFactor;
+    const [minOffsetX, maxOffsetX] = getOffsetBounds({
+      containerDimension: rect.width,
+      childDimension: elWidth,
+      padding: this.props.horizontalPadding,
+      centerContained: this.props.centerContained,
+    });
+    const [minOffsetY, maxOffsetY] = getOffsetBounds({
+      containerDimension: rect.height,
+      childDimension: elHeight,
+      padding: this.props.verticalPadding,
+      centerContained: this.props.centerContained,
+    });
     return {
       x: clamp(minOffsetX, maxOffsetX, offset.x),
       y: clamp(minOffsetY, maxOffsetY, offset.y),
     };
-  };
-  PinchZoom.prototype.alignCenter = function (options) {
-    var _this = this;
-    var _a = __assign({ duration: 250, animated: true }, options),
-      x = _a.x,
-      y = _a.y,
-      scale = _a.scale,
-      animated = _a.animated,
-      duration = _a.duration;
-    var startZoomFactor = this._zoomFactor;
-    var startOffset = __assign({}, this._offset);
-    var rect = this._getContainerRect();
-    var containerCenter = { x: rect.width / 2, y: rect.height / 2 };
+  }
+  alignCenter(options) {
+    const {
+      x: __x,
+      y: __y,
+      scale,
+      animated,
+      duration,
+    } = {
+      duration: 250,
+      animated: true,
+      ...options,
+    };
+    // Bug-Fix: https://github.com/retyui/react-quick-pinch-zoom/issues/58
+    const x = __x * this._initialZoomFactor;
+    const y = __y * this._initialZoomFactor;
+    const startZoomFactor = this._zoomFactor;
+    const startOffset = { ...this._offset };
+    const rect = this._getContainerRect();
+    const containerCenter = { x: rect.width / 2, y: rect.height / 2 };
     this._zoomFactor = 1;
     this._offset = { x: -(containerCenter.x - x), y: -(containerCenter.y - y) };
     this._scaleTo(scale, containerCenter);
@@ -489,79 +343,70 @@ var PinchZoom = /** @class */ (function (_super) {
     if (!animated) {
       return this._update();
     }
-    var diffZoomFactor = this._zoomFactor - startZoomFactor;
-    var diffOffset = {
+    const diffZoomFactor = this._zoomFactor - startZoomFactor;
+    const diffOffset = {
       x: this._offset.x - startOffset.x,
       y: this._offset.y - startOffset.y,
     };
     this._zoomFactor = startZoomFactor;
-    this._offset = __assign({}, startOffset);
-    var updateFrame = function (progress) {
-      var x = startOffset.x + diffOffset.x * progress;
-      var y = startOffset.y + diffOffset.y * progress;
-      _this._zoomFactor = startZoomFactor + diffZoomFactor * progress;
-      _this._offset = _this._sanitizeOffset({ x: x, y: y });
-      _this._update();
+    this._offset = { ...startOffset };
+    const updateFrame = (progress) => {
+      const x = startOffset.x + diffOffset.x * progress;
+      const y = startOffset.y + diffOffset.y * progress;
+      this._zoomFactor = startZoomFactor + diffZoomFactor * progress;
+      this._offset = this._sanitizeOffset({ x, y });
+      this._update();
     };
     this._animate(updateFrame, {
-      callback: function () {
-        return _this._sanitize();
-      },
-      duration: duration,
+      callback: () => this._sanitize(),
+      duration,
     });
-  };
-  PinchZoom.prototype.scaleTo = function (options) {
-    var _this = this;
-    var _a = __assign({ duration: 250, animated: true }, options),
-      x = _a.x,
-      y = _a.y,
-      scale = _a.scale,
-      animated = _a.animated,
-      duration = _a.duration;
-    var startZoomFactor = this._zoomFactor;
-    var startOffset = __assign({}, this._offset);
+  }
+  scaleTo(options) {
+    const { x, y, scale, animated, duration } = {
+      duration: 250,
+      animated: true,
+      ...options,
+    };
+    const startZoomFactor = this._zoomFactor;
+    const startOffset = { ...this._offset };
     this._zoomFactor = 1;
     this._offset = { x: 0, y: 0 };
-    this._scaleTo(scale, { x: x, y: y });
+    this._scaleTo(scale, { x, y });
     this._stopAnimation();
     if (!animated) {
       return this._update();
     }
-    var diffZoomFactor = this._zoomFactor - startZoomFactor;
-    var diffOffset = {
+    const diffZoomFactor = this._zoomFactor - startZoomFactor;
+    const diffOffset = {
       x: this._offset.x - startOffset.x,
       y: this._offset.y - startOffset.y,
     };
     this._zoomFactor = startZoomFactor;
-    this._offset = __assign({}, startOffset);
-    var updateFrame = function (progress) {
-      var x = startOffset.x + diffOffset.x * progress;
-      var y = startOffset.y + diffOffset.y * progress;
-      _this._zoomFactor = startZoomFactor + diffZoomFactor * progress;
-      _this._offset = { x: x, y: y };
-      _this._update();
+    this._offset = { ...startOffset };
+    const updateFrame = (progress) => {
+      const x = startOffset.x + diffOffset.x * progress;
+      const y = startOffset.y + diffOffset.y * progress;
+      this._zoomFactor = startZoomFactor + diffZoomFactor * progress;
+      this._offset = { x, y };
+      this._update();
     };
-    this._animate(updateFrame, {
-      callback: function () {
-        return _this._sanitize();
-      },
-      duration: duration,
-    });
-  };
-  PinchZoom.prototype._scaleTo = function (zoomFactor, center) {
+    this._animate(updateFrame, { callback: () => this._sanitize(), duration });
+  }
+  _scaleTo(zoomFactor, center) {
     this._scale(zoomFactor / this._zoomFactor, center);
     this._offset = this._sanitizeOffset(this._offset);
-  };
-  PinchZoom.prototype._scale = function (scale, center) {
+  }
+  _scale(scale, center) {
     scale = this._scaleZoomFactor(scale);
     this._addOffset({
       x: (scale - 1) * (center.x + this._offset.x),
       y: (scale - 1) * (center.y + this._offset.y),
     });
     this.props.onZoomUpdate();
-  };
-  PinchZoom.prototype._scaleZoomFactor = function (scale) {
-    var originalZoomFactor = this._zoomFactor;
+  }
+  _scaleZoomFactor(scale) {
+    const originalZoomFactor = this._zoomFactor;
     this._zoomFactor *= scale;
     this._zoomFactor = clamp(
       this.props.minZoom,
@@ -569,269 +414,240 @@ var PinchZoom = /** @class */ (function (_super) {
       this._zoomFactor,
     );
     return this._zoomFactor / originalZoomFactor;
-  };
-  PinchZoom.prototype._canDrag = function () {
+  }
+  _canDrag() {
     return this.props.draggableUnZoomed || !isCloseTo(this._zoomFactor, 1);
-  };
-  PinchZoom.prototype._drag = function (center, lastCenter) {
+  }
+  _drag(center, lastCenter) {
     if (lastCenter) {
-      var y = -(center.y - lastCenter.y);
-      var x = -(center.x - lastCenter.x);
+      const y = -(center.y - lastCenter.y);
+      const x = -(center.x - lastCenter.x);
       if (!this.props.lockDragAxis) {
         this._addOffset({
-          x: x,
-          y: y,
+          x,
+          y,
         });
       } else {
         // lock scroll to position that was changed the most
         if (abs(x) > abs(y)) {
           this._addOffset({
-            x: x,
+            x,
             y: 0,
           });
         } else {
           this._addOffset({
-            y: y,
+            y,
             x: 0,
           });
         }
       }
       this.props.onDragUpdate();
     }
-  };
-  PinchZoom.prototype._virtualDrag = function (center, lastCenter) {
+  }
+  _virtualDrag(center, lastCenter) {
     if (lastCenter) {
-      var y = -(center.y - lastCenter.y);
-      var x = -(center.x - lastCenter.x);
+      const y = -(center.y - lastCenter.y);
+      const x = -(center.x - lastCenter.x);
       this._draggingPoint = {
         x: x + this._draggingPoint.x,
         y: y + this._draggingPoint.y,
       };
     }
-  };
-  PinchZoom.prototype._addOffset = function (offset) {
-    var _a = this._offset,
-      x = _a.x,
-      y = _a.y;
+  }
+  _addOffset(offset) {
+    const { x, y } = this._offset;
     this._offset = {
       x: x + offset.x,
       y: y + offset.y,
     };
-  };
-  PinchZoom.prototype._sanitize = function () {
+  }
+  _sanitize() {
     if (this._zoomFactor < this.props.zoomOutFactor) {
       this._resetInertia();
       this._zoomOutAnimation();
     } else if (this._isInsaneOffset()) {
       this._sanitizeOffsetAnimation();
     }
-  };
-  PinchZoom.prototype._isInsaneOffset = function () {
-    var offset = this._offset;
-    var sanitizedOffset = this._sanitizeOffset(offset);
+  }
+  _isInsaneOffset() {
+    const offset = this._offset;
+    const sanitizedOffset = this._sanitizeOffset(offset);
     return sanitizedOffset.x !== offset.x || sanitizedOffset.y !== offset.y;
-  };
-  PinchZoom.prototype._sanitizeOffsetAnimation = function () {
-    var _this = this;
-    var targetOffset = this._sanitizeOffset(this._offset);
-    var startOffset = __assign({}, this._offset);
-    var updateProgress = function (progress) {
-      var x = startOffset.x + progress * (targetOffset.x - startOffset.x);
-      var y = startOffset.y + progress * (targetOffset.y - startOffset.y);
-      _this._offset = { x: x, y: y };
-      _this._update();
+  }
+  _sanitizeOffsetAnimation() {
+    const targetOffset = this._sanitizeOffset(this._offset);
+    const startOffset = { ...this._offset };
+    const updateProgress = (progress) => {
+      const x = startOffset.x + progress * (targetOffset.x - startOffset.x);
+      const y = startOffset.y + progress * (targetOffset.y - startOffset.y);
+      this._offset = { x, y };
+      this._update();
     };
     this._animate(updateProgress);
-  };
-  PinchZoom.prototype._zoomOutAnimation = function () {
-    var _this = this;
+  }
+  _zoomOutAnimation() {
     if (this._zoomFactor === 1) {
       return;
     }
-    var startZoomFactor = this._zoomFactor;
-    var zoomFactor = 1;
-    var center = this._getCurrentZoomCenter();
-    var updateProgress = function (progress) {
-      var scaleFactor =
+    const startZoomFactor = this._zoomFactor;
+    const zoomFactor = 1;
+    const center = this._getCurrentZoomCenter();
+    const updateProgress = (progress) => {
+      const scaleFactor =
         startZoomFactor + progress * (zoomFactor - startZoomFactor);
-      _this._scaleTo(scaleFactor, center);
+      this._scaleTo(scaleFactor, center);
     };
     this._animate(updateProgress);
-  };
-  PinchZoom.prototype._getInitialZoomFactor = function () {
+  }
+  _getInitialZoomFactor() {
     return this._initialZoomFactor;
-  };
-  PinchZoom.prototype._getCurrentZoomCenter = function () {
-    var _a = this._offset,
-      x = _a.x,
-      y = _a.y;
-    var offsetLeft = x - this._initialOffset.x;
-    var offsetTop = y - this._initialOffset.y;
+  }
+  _getCurrentZoomCenter() {
+    const { x, y } = this._offset;
+    const offsetLeft = x - this._initialOffset.x;
+    const offsetTop = y - this._initialOffset.y;
     return {
       x: -1 * x - offsetLeft / (1 / this._zoomFactor - 1),
       y: -1 * y - offsetTop / (1 / this._zoomFactor - 1),
     };
-  };
-  PinchZoom.prototype._getOffsetByFirstTouch = function (event) {
+  }
+  _getOffsetByFirstTouch(event) {
     return this._getOffsetTouches(event)[0];
-  };
-  PinchZoom.prototype._getOffsetTouches = function (event) {
-    var _document = this.props._document;
-    var _html = _document.documentElement;
-    var _body = _document.body;
-    var _a = this._getContainerRect(),
-      top = _a.top,
-      left = _a.left;
-    var scrollTop = _html.scrollTop || _body.scrollTop;
-    var scrollLeft = _html.scrollLeft || _body.scrollLeft;
-    var posTop = top + scrollTop;
-    var posLeft = left + scrollLeft;
-    return getPageCoordinatesByTouches(event.touches).map(function (_a) {
-      var x = _a.x,
-        y = _a.y;
-      return {
-        x: x - posLeft,
-        y: y - posTop,
-      };
-    });
-  };
-  PinchZoom.prototype._animate = function (frameFn, options) {
-    var _this = this;
-    var startTime = new Date().getTime();
-    var _a = __assign(
-        {
-          timeFn: swing,
-          callback: function () {},
-          duration: this.props.animationDuration,
-        },
-        options,
-      ),
-      timeFn = _a.timeFn,
-      callback = _a.callback,
-      duration = _a.duration;
-    var renderFrame = function () {
-      if (!_this._inAnimation) {
+  }
+  _getOffsetTouches(event) {
+    const { _document } = this.props;
+    const _html = _document.documentElement;
+    const _body = _document.body;
+    const { top, left } = this._getContainerRect();
+    const scrollTop = _html.scrollTop || _body.scrollTop;
+    const scrollLeft = _html.scrollLeft || _body.scrollLeft;
+    const posTop = top + scrollTop;
+    const posLeft = left + scrollLeft;
+    return getPageCoordinatesByTouches(event.touches).map(({ x, y }) => ({
+      x: x - posLeft,
+      y: y - posTop,
+    }));
+  }
+  _animate(frameFn, options) {
+    const startTime = new Date().getTime();
+    const { timeFn, callback, duration } = {
+      timeFn: swing,
+      callback: () => {},
+      duration: this.props.animationDuration,
+      ...options,
+    };
+    const renderFrame = () => {
+      if (!this._inAnimation) {
         return;
       }
-      var frameTime = new Date().getTime() - startTime;
-      var progress = frameTime / duration;
+      const frameTime = new Date().getTime() - startTime;
+      let progress = frameTime / duration;
       if (frameTime >= duration) {
         frameFn(1);
-        _this._stopAnimation();
+        this._stopAnimation();
         callback();
-        _this._update();
+        this._update();
       } else {
         progress = timeFn(progress);
         frameFn(progress);
-        _this._update({ isAnimation: true });
+        this._update({ isAnimation: true });
         requestAnimationFrame(renderFrame);
       }
     };
     this._inAnimation = true;
     requestAnimationFrame(renderFrame);
-  };
-  PinchZoom.prototype._stopAnimation = function () {
+  }
+  _stopAnimation() {
     this._inAnimation = false;
-  };
-  PinchZoom.prototype._end = function () {
+  }
+  _end() {
     this._hasInteraction = false;
     this._sanitize();
     this._update();
-  };
-  PinchZoom.prototype._getContainerRect = function () {
-    var div = this._containerRef.current;
+  }
+  _getContainerRect() {
+    const { current: div } = this._containerRef;
     return div.getBoundingClientRect();
-  };
-  PinchZoom.prototype._getChildSize = function () {
-    var div = this._containerRef.current;
-    var firstImage = findFirstImage(div);
+  }
+  _getChildSize() {
+    const { current: div } = this._containerRef;
+    const firstImage = findFirstImage(div);
     return getElementSize(firstImage);
     // return getElementSize(div?.firstElementChild as HTMLElement | null);
-  };
-  PinchZoom.prototype._updateInitialZoomFactor = function () {
-    var rect = this._getContainerRect();
-    var size = this._getChildSize();
-    var xZoomFactor = rect.width / size.width;
-    var yZoomFactor = rect.height / size.height;
+  }
+  _updateInitialZoomFactor() {
+    const rect = this._getContainerRect();
+    const size = this._getChildSize();
+    const xZoomFactor = rect.width / size.width;
+    const yZoomFactor = rect.height / size.height;
     this._initialZoomFactor = min(xZoomFactor, yZoomFactor);
+  }
+  _onResize = () => {
+    if (this._containerRef?.current) {
+      this._updateInitialZoomFactor();
+      this._setupOffsets();
+      this._update();
+    }
   };
-  PinchZoom.prototype._bindEvents = function () {
-    var div = this._containerRef.current;
+  _bindEvents() {
+    const { current: div } = this._containerRef;
     if (window.ResizeObserver) {
       this._containerObserver = new ResizeObserver(this._onResize);
       this._containerObserver.observe(div);
     } else {
       window.addEventListener('resize', this._onResize);
     }
-    this._handlers.forEach(function (_a) {
-      var eventName = _a[0],
-        fn = _a[1],
-        target = _a[2];
+    this._handlers.forEach(([eventName, fn, target]) => {
       (target || div).addEventListener(eventName, fn, true);
     });
-    var firstImage = findFirstImage(div);
+    const firstImage = findFirstImage(div);
     if (firstImage) {
       firstImage.addEventListener('load', this._onResize);
     }
-    // Array.from(div.querySelectorAll('img')).forEach((img) =>
-    //   img.addEventListener('load', this._onResize),
-    // );
-  };
-  PinchZoom.prototype._unSubscribe = function () {
-    var div = this._containerRef.current;
+  }
+  _unSubscribe() {
+    const { current: div } = this._containerRef;
     if (this._containerObserver) {
       this._containerObserver.disconnect();
       this._containerObserver = null;
     }
     window.removeEventListener('resize', this._onResize);
-    this._handlers.forEach(function (_a) {
-      var eventName = _a[0],
-        fn = _a[1],
-        target = _a[2];
+    this._handlers.forEach(([eventName, fn, target]) => {
       (target || div).removeEventListener(eventName, fn, true);
     });
-    var firstImage = findFirstImage(div);
+    const firstImage = findFirstImage(div);
     if (firstImage) {
       firstImage.removeEventListener('load', this._onResize);
     }
-    // Array.from(div.querySelectorAll('img')).forEach((img) =>
-    //   img.removeEventListener('load', this._onResize),
-    // );
-  };
-  PinchZoom.prototype._update = function (options) {
-    var _this = this;
+  }
+  _update(options) {
     if (this._updatePlaned) {
       return;
     }
-    var updateFrame = function () {
-      var scale = _this._getInitialZoomFactor() * _this._zoomFactor;
-      var x = -_this._offset.x / scale;
-      var y = -_this._offset.y / scale;
-      _this.props.onUpdate({ scale: scale, x: x, y: y });
+    const updateFrame = () => {
+      const scale = this._getInitialZoomFactor() * this._zoomFactor;
+      const x = -this._offset.x / scale;
+      const y = -this._offset.y / scale;
+      this.props.onUpdate({ scale, x, y });
     };
-    if (options === null || options === void 0 ? void 0 : options.isAnimation) {
+    if (options?.isAnimation) {
       return updateFrame();
     }
     this._updatePlaned = true;
-    requestAnimationFrame(function () {
-      _this._updatePlaned = false;
+    requestAnimationFrame(() => {
+      this._updatePlaned = false;
       updateFrame();
     });
-  };
-  PinchZoom.prototype._handlerIfEnable = function (fn) {
-    var _this = this;
-    return function () {
-      var args = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i] = arguments[_i];
-      }
-      if (_this.props.enabled) {
-        fn.apply(void 0, args);
+  }
+  _handlerIfEnable(fn) {
+    return (...args) => {
+      if (this.props.enabled) {
+        fn(...args);
       }
     };
-  };
-  PinchZoom.prototype._setInteraction = function (newInteraction, event) {
-    var interaction = this._interaction;
+  }
+  _setInteraction(newInteraction, event) {
+    const interaction = this._interaction;
     if (interaction !== newInteraction) {
       if (interaction && !newInteraction) {
         if (isZoomInteraction(interaction)) {
@@ -847,11 +663,11 @@ var PinchZoom = /** @class */ (function (_super) {
       }
     }
     this._interaction = newInteraction;
-  };
-  PinchZoom.prototype._distanceBetweenNumbers = function (a, b) {
+  }
+  _distanceBetweenNumbers(a, b) {
     return a > b ? a - b : b - a;
-  };
-  PinchZoom.prototype._enoughToDrag = function () {
+  }
+  _enoughToDrag() {
     if (
       this._distanceBetweenNumbers(this._startOffset.x, this._draggingPoint.x) >
         5 ||
@@ -860,9 +676,9 @@ var PinchZoom = /** @class */ (function (_super) {
     )
       return true;
     return false;
-  };
-  PinchZoom.prototype._updateInteraction = function (event) {
-    var fingers = this._fingers;
+  }
+  _updateInteraction(event) {
+    const fingers = this._fingers;
     if (fingers === 2) {
       return this._setInteraction('zoom', event);
     }
@@ -870,9 +686,9 @@ var PinchZoom = /** @class */ (function (_super) {
       return this._setInteraction('drag', event);
     }
     this._setInteraction(null, event);
-  };
-  PinchZoom.prototype._detectDoubleTap = function (event) {
-    var time = new Date().getTime();
+  }
+  _detectDoubleTap(event) {
+    const time = new Date().getTime();
     if (this._fingers > 1) {
       this._lastTouchStart = 0;
     }
@@ -890,147 +706,173 @@ var PinchZoom = /** @class */ (function (_super) {
     if (this._fingers === 1) {
       this._lastTouchStart = time;
     }
-  };
-  PinchZoom.prototype.simulate = function (fn) {
-    var _this = this;
-    return function (mouseEvent) {
-      var pageX = mouseEvent.pageX,
-        pageY = mouseEvent.pageY,
-        type = mouseEvent.type;
-      var isEnd = type === 'mouseup';
-      var isStart = type === 'mousedown';
+  }
+  _handlerOnTouchEnd = this._handlerIfEnable((touchEndEvent) => {
+    this._fingers = touchEndEvent.touches.length;
+    if (
+      this.props.shouldCancelHandledTouchEndEvents &&
+      (isZoomInteraction(this._interaction) ||
+        (isDragInteraction(this._interaction) &&
+          (this._startOffset.x !== this._offset.x ||
+            this._startOffset.y !== this._offset.y)))
+    ) {
+      cancelEvent(touchEndEvent);
+    }
+    if (isDragInteraction(this._interaction) && !this._enoughToDrag()) {
+      this._handleClick(touchEndEvent);
+    }
+    this._updateInteraction(touchEndEvent);
+  });
+  _handlerOnTouchStart = this._handlerIfEnable((touchStartEvent) => {
+    this._firstMove = true;
+    this._fingers = touchStartEvent.touches.length;
+    this._detectDoubleTap(touchStartEvent);
+  });
+  _handlerOnTouchMove = this._handlerIfEnable((touchMoveEvent) => {
+    if (this._isDoubleTap) {
+      return;
+    }
+    this._collectInertia(touchMoveEvent);
+    if (this._firstMove) {
+      this._updateInteraction(touchMoveEvent);
+      if (this._interaction) {
+        cancelEvent(touchMoveEvent);
+      }
+      this._startOffset = { ...this._offset };
+      this._startTouches = getPageCoordinatesByTouches(touchMoveEvent.touches);
+    } else {
+      if (isZoomInteraction(this._interaction)) {
+        if (
+          this._startTouches &&
+          this._startTouches.length === 2 &&
+          touchMoveEvent.touches.length === 2
+        ) {
+          this._handleZoom(
+            touchMoveEvent,
+            calculateScale(
+              this._startTouches,
+              getPageCoordinatesByTouches(touchMoveEvent.touches),
+            ),
+          );
+        }
+      } else if (isDragInteraction(this._interaction)) {
+        this._handleDrag(touchMoveEvent);
+      }
+      if (this._interaction) {
+        cancelEvent(touchMoveEvent);
+        this._update();
+      }
+    }
+    this._firstMove = false;
+  });
+  simulate(fn) {
+    return (mouseEvent) => {
+      const { pageX, pageY, type } = mouseEvent;
+      const isEnd = type === 'mouseup';
+      const isStart = type === 'mousedown';
       if (isStart) {
         mouseEvent.preventDefault();
-        _this._listenMouseMove = true;
+        this._listenMouseMove = true;
       }
-      if (_this._listenMouseMove) {
+      if (this._listenMouseMove) {
         // @ts-ignore
-        mouseEvent.touches = isEnd ? [] : [{ pageX: pageX, pageY: pageY }];
+        mouseEvent.touches = isEnd ? [] : [{ pageX, pageY }];
         fn(
           // @ts-ignore
           mouseEvent,
         );
       }
       if (isEnd) {
-        _this._listenMouseMove = false;
+        this._listenMouseMove = false;
       }
     };
+  }
+  _handlerWheel = (wheelEvent) => {
+    if (this.props.shouldInterceptWheel(wheelEvent)) {
+      return;
+    }
+    cancelEvent(wheelEvent);
+    const { pageX, pageY, deltaY, deltaMode } = wheelEvent;
+    let scaleDelta = 1;
+    if (isZoomGesture(wheelEvent) || deltaMode === 1) {
+      scaleDelta = 15;
+    }
+    const likeTouchEvent = {
+      touches: [
+        // @ts-ignore
+        { pageX, pageY },
+      ],
+    };
+    const center = this._getOffsetByFirstTouch(likeTouchEvent);
+    const dScale = deltaY * scaleDelta;
+    this._stopAnimation();
+    this._scaleTo(
+      this._zoomFactor - dScale / this.props.wheelScaleFactor,
+      center,
+    );
+    this._update();
+    clearTimeout(
+      // @ts-ignore
+      this._wheelTimeOut,
+    );
+    this._wheelTimeOut = setTimeout(() => this._sanitize(), 100);
   };
-  PinchZoom.prototype.componentDidMount = function () {
+  // @ts-ignore
+  _handlers = this.props.isTouch()
+    ? [
+        ['touchstart', this._handlerOnTouchStart],
+        ['touchend', this._handlerOnTouchEnd],
+        ['touchmove', this._handlerOnTouchMove],
+      ]
+    : [
+        [
+          'mousemove',
+          this.simulate(this._handlerOnTouchMove),
+          this.props._document,
+        ],
+        [
+          'mouseup',
+          this.simulate(this._handlerOnTouchEnd),
+          this.props._document,
+        ],
+        ['mousedown', this.simulate(this._handlerOnTouchStart)],
+        ['click', this._handleClick],
+        ['wheel', this._handlerWheel],
+      ];
+  componentDidMount() {
     this._bindEvents();
     this._update();
-  };
-  PinchZoom.prototype.componentWillUnmount = function () {
+  }
+  componentWillUnmount() {
     this._stopAnimation();
     this._unSubscribe();
-  };
-  PinchZoom.prototype.render = function () {
-    var _a = this.props,
-      children = _a.children,
-      containerProps = _a.containerProps,
-      containerElementType = _a.containerElementType,
-      renderSources = _a.renderSources;
-    var child = React.Children.only(children);
-    var props = containerProps || {};
-    var ElementType = containerElementType || 'div';
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement('style', null, styles),
-      React.createElement(
-        ElementType,
-        __assign(__assign({}, props), {
-          ref: this._containerRef,
-          className: classnames(styleRoot, props.className),
-        }),
-        __spreadArray(
-          __spreadArray([], renderSources ? renderSources() : [], true),
+  }
+  render() {
+    const { children, containerProps, containerElementType, renderSources } =
+      this.props;
+    const child = Children.only(children);
+    const props = containerProps || {};
+    const ElementType = containerElementType || 'div';
+    return _jsxs(_Fragment, {
+      children: [
+        _jsx('style', { children: styles }),
+        createElement(
+          ElementType,
+          {
+            ...props,
+            ref: this._containerRef,
+            className: classnames(styleRoot, props.className),
+          },
           [
-            React.cloneElement(child, {
+            ...(renderSources ? renderSources() : []),
+            cloneElement(child, {
               key: 'pinch-zoom-img-child',
               className: classnames(styleChild, child.props.className),
             }),
           ],
-          false,
         ),
-      ),
-    );
-  };
-  PinchZoom.defaultProps = {
-    animationDuration: 250,
-    draggableUnZoomed: true,
-    enforceBoundsDuringZoom: false,
-    centerContained: false,
-    enabled: true,
-    inertia: true,
-    inertiaFriction: 0.96,
-    horizontalPadding: 0,
-    isTouch: isTouch,
-    lockDragAxis: false,
-    maxZoom: 5,
-    minZoom: 0.5,
-    onDoubleTap: noup,
-    onDragEnd: noup,
-    onDragStart: noup,
-    onDragUpdate: noup,
-    onZoomEnd: noup,
-    onZoomStart: noup,
-    onZoomUpdate: noup,
-    setOffsetsOnce: false,
-    shouldInterceptWheel: shouldInterceptWheel,
-    shouldCancelHandledTouchEndEvents: false,
-    tapZoomFactor: 1,
-    verticalPadding: 0,
-    wheelScaleFactor: 1500,
-    zoomOutFactor: 1.3,
-    doubleTapZoomOutOnMaxScale: false,
-    doubleTapToggleZoom: false,
-    // @ts-expect-error
-    _document: isSsr ? null : window.document,
-  };
-  return PinchZoom;
-})(React.Component);
-if (process.env.NODE_ENV !== 'production') {
-  var _a = require('prop-types'),
-    any = _a.any,
-    element = _a.element,
-    object = _a.object,
-    number = _a.number,
-    func = _a.func,
-    bool = _a.bool,
-    string = _a.string;
-  // @ts-ignore
-  PinchZoom.propTypes = {
-    children: element,
-    containerProps: object,
-    containerElementType: string,
-    renderSources: func,
-    wheelScaleFactor: number,
-    animationDuration: number,
-    draggableUnZoomed: bool,
-    enforceBoundsDuringZoom: bool,
-    centerContained: bool,
-    enabled: bool,
-    horizontalPadding: number,
-    lockDragAxis: bool,
-    onUpdate: func.isRequired,
-    maxZoom: number,
-    minZoom: number,
-    onDoubleTap: func,
-    onDragEnd: func,
-    onDragStart: func,
-    onDragUpdate: func,
-    onZoomEnd: func,
-    onZoomStart: func,
-    onZoomUpdate: func,
-    setOffsetsOnce: bool,
-    tapZoomFactor: number,
-    verticalPadding: number,
-    zoomOutFactor: number,
-    doubleTapZoomOutOnMaxScale: bool,
-    doubleTapToggleZoom: bool,
-    isTouch: func,
-    _document: any,
-  };
+      ],
+    });
+  }
 }
 export default PinchZoom;
