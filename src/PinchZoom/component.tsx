@@ -758,7 +758,8 @@ class PinchZoom extends Component<Props> {
     }
 
     this._handlers.forEach(([eventName, fn, target]) => {
-      (target || div).addEventListener(eventName, fn, true);
+     const passive = eventName.startsWith('touch');
+     (target || div).addEventListener(eventName, fn, { capture: true, passive });
     });
 
     const firstImage = findFirstImage(div);
@@ -885,8 +886,6 @@ class PinchZoom extends Component<Props> {
     }
 
     if (time - this._lastTouchStart < 300) {
-      cancelEvent(event);
-
       this._handleDoubleTap(event);
 
       if (isZoomInteraction(this._interaction)) {
@@ -944,10 +943,6 @@ class PinchZoom extends Component<Props> {
       if (this._firstMove) {
         this._updateInteraction(touchMoveEvent);
 
-        if (this._interaction) {
-          cancelEvent(touchMoveEvent);
-        }
-
         this._startOffset = { ...this._offset };
         this._startTouches = getPageCoordinatesByTouches(
           touchMoveEvent.touches,
@@ -971,7 +966,6 @@ class PinchZoom extends Component<Props> {
           this._handleDrag(touchMoveEvent);
         }
         if (this._interaction) {
-          cancelEvent(touchMoveEvent);
           this._update();
         }
       }
