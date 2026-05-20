@@ -187,6 +187,14 @@ class PinchZoom extends Component<Props> {
   private _draggingPoint: Point = { ...zeroPoint };
   // It help reduce behavior difference between touch and mouse events
   private _ignoreNextClick: boolean = false;
+  // Cached layout reads, populated for the duration of an active gesture so
+  // that touchmove handlers do not force layout twice per move.
+  private _cachedRect: ClientRect | null = null;
+  private _cachedChildSize: { width: number; height: number } | null = null;
+  private _cachedImage: HTMLImageElement | null = null;
+  // Guards against rAF callbacks that were queued before unmount firing
+  // onUpdate after the component is gone.
+  private _isUnmounted: boolean = false;
   // @ts-ignore
   private _containerRef: {
     readonly current: HTMLDivElement;
@@ -673,7 +681,7 @@ class PinchZoom extends Component<Props> {
   }
 
   private _animate(frameFn: (a: number) => void, options?: AnimateOptions) {
-    const startTime = new Date().getTime();
+    const startTime = performance.now();
     const { timeFn, callback, duration } = {
       timeFn: swing,
       callback: () => {},
@@ -685,7 +693,7 @@ class PinchZoom extends Component<Props> {
         return;
       }
 
-      const frameTime = new Date().getTime() - startTime;
+      const frameTime = performance.now() - startTime;
       let progress = frameTime / duration;
 
       if (frameTime >= duration) {
@@ -716,18 +724,40 @@ class PinchZoom extends Component<Props> {
   }
 
   private _getContainerRect(): ClientRect {
-    const { current: div } = this._containerRef;
+    if (this._cachedRect) {
+      return this._cachedRect;
+    }
+    return this._containerRef.current.getBoundingClientRect();
+  }
 
-    return div.getBoundingClientRect();
+  private _getChildImage(): HTMLImageElement | null {
+    if (this._cachedImage) {
+      return this._cachedImage;
+    }
+    return findFirstImage(this._containerRef.current);
   }
 
   private _getChildSize(): { width: number; height: number } {
-    const { current: div } = this._containerRef;
+    if (this._cachedChildSize) {
+      return this._cachedChildSize;
+    }
+    return getElementSize(this._getChildImage() as HTMLElement | null);
+  }
 
-    const firstImage = findFirstImage(div);
+  private _populateGestureCache() {
+    const div = this._containerRef.current;
+    if (!div) return;
+    this._cachedRect = div.getBoundingClientRect();
+    this._cachedImage = findFirstImage(div);
+    this._cachedChildSize = getElementSize(
+      this._cachedImage as HTMLElement | null,
+    );
+  }
 
-    return getElementSize(firstImage as HTMLElement | null);
-    // return getElementSize(div?.firstElementChild as HTMLElement | null);
+  private _clearGestureCache() {
+    this._cachedRect = null;
+    this._cachedChildSize = null;
+    this._cachedImage = null;
   }
 
   private _updateInitialZoomFactor() {
@@ -741,6 +771,7 @@ class PinchZoom extends Component<Props> {
 
   private _onResize = () => {
     if (this._containerRef?.current) {
+      this._clearGestureCache();
       this._updateInitialZoomFactor();
       this._setupOffsets();
       this._update();
@@ -758,8 +789,15 @@ class PinchZoom extends Component<Props> {
     }
 
     this._handlers.forEach(([eventName, fn, target]) => {
-     const passive = eventName.startsWith('touch');
-     (target || div).addEventListener(eventName, fn, { capture: true, passive });
+      // Only touchmove / touchstart need to be passive so the browser does not
+      // block native scroll on them. touchend must stay non-passive so
+      // shouldCancelHandledTouchEndEvents can still call preventDefault().
+      const passive =
+        eventName === 'touchmove' || eventName === 'touchstart';
+      (target || div).addEventListener(eventName, fn, {
+        capture: true,
+        passive,
+      });
     });
 
     const firstImage = findFirstImage(div);
@@ -811,7 +849,7 @@ class PinchZoom extends Component<Props> {
 
     requestAnimationFrame(() => {
       this._updatePlaned = false;
-
+      if (this._isUnmounted) return;
       updateFrame();
     });
   }
@@ -921,6 +959,10 @@ class PinchZoom extends Component<Props> {
       }
 
       this._updateInteraction(touchEndEvent);
+
+      if (this._fingers === 0) {
+        this._clearGestureCache();
+      }
     },
   );
 
@@ -928,6 +970,7 @@ class PinchZoom extends Component<Props> {
     (touchStartEvent: TouchEvent) => {
       this._firstMove = true;
       this._fingers = touchStartEvent.touches.length;
+      this._populateGestureCache();
       this._detectDoubleTap(touchStartEvent);
     },
   );
@@ -1069,7 +1112,12 @@ class PinchZoom extends Component<Props> {
   }
 
   componentWillUnmount() {
+    this._isUnmounted = true;
     this._stopAnimation();
+    if (this._wheelTimeOut) {
+      clearTimeout(this._wheelTimeOut);
+      this._wheelTimeOut = null;
+    }
     this._unSubscribe();
   }
 
